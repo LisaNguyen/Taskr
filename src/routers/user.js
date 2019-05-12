@@ -1,14 +1,10 @@
 const express = require('express');
 const User = require('../models/User');
+const auth = require('../middleware/authentication');
 const router = new express.Router();
 
-router.get('/users', async (req, res) => {
-  try {
-    const users = await User.find({});
-    res.send(users);
-  } catch (error) {
-    res.status(500).send();
-  }
+router.get('/users/me', auth, async (req, res) => {
+  res.send(req.user);
 });
 
 router.get('/users/:id', async (req, res) => {
@@ -29,7 +25,8 @@ router.post('/users', async (req, res) => {
   const user = new User(req.body);
   try {
     await user.save();
-    res.status(201).send(user);
+    const token = await user.generateAuthToken();
+    res.status(201).send({ user, token });
   } catch (error) {
     res.status(400).send(error);
   };
@@ -39,7 +36,8 @@ router.post('/users/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findByCredentials(email, password);
-    res.send(user);
+    const token = await user.generateAuthToken();
+    res.send({ user, token });
   } catch (error) {
     res.status(400).send(error);
   }
