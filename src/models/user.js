@@ -49,13 +49,21 @@ const userSchema = mongoose.Schema({
   }]
 });
 
-userSchema.methods.generateAuthToken = async function () {
+userSchema.methods.generateAuthToken = async function() {
   const user = this;
   const token = jwt.sign({ _id: user._id.toString() }, 'SAjdshdjhsSerfHK');
   user.tokens = user.tokens.concat({ token });
   await user.save();
-  
+
   return token;
+};
+
+userSchema.methods.toJSON = function() {
+  const user = this;
+  const userObj = user.toObject();
+  delete userObj.password;
+  delete userObj.tokens;
+  return userObj;
 };
 
 userSchema.statics.findByCredentials = async (email, password) => {
@@ -70,7 +78,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
   }
 
   return user;
-}
+};
 
 // hashes the user's plain text password
 userSchema.pre('save', async function(next) {
