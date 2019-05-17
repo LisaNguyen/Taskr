@@ -1,7 +1,11 @@
 const express = require('express');
+const multer = require('multer');
 const Task = require('../models/task');
 const auth = require('../middleware/authentication');
 const router = new express.Router();
+const upload = multer({
+  dest: 'avatars'
+});
 
 router.get('/tasks', auth, async (req, res) => {
   const match = {};
@@ -88,6 +92,10 @@ router.patch('/tasks/:id', auth, async (req, res) => {
   } catch (error) {
     res.status(400).send(error);
   }
+});
+
+router.post('/users/me/avatar', upload.single('avatar'), (req, res) => {
+  res.send();
 });
 
 router.delete('/tasks/:id', auth, async (req, res) => {
